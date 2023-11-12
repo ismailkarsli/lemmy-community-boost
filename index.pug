@@ -1,0 +1,194 @@
+doctype html
+html(lang="en")
+	head
+		meta(charset="UTF-8")
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		title Lemmy Community Boost (LCB)
+	body
+		article#main
+			h1 Lemmy Community Boost
+			p LCB is a tool to "seed" beginner communities in the Lemmyverse.
+			p The purpose: Communities in Lemmy are only federated if a user is subscribes to them from external instance. This means that new communities are not visible to external instance users. To fix that, LCB automatically subscribes to new communities <b>from external instances</b> to make them federated.
+			p Why: I think mods (including me) wouldn't to put effort into a new community if it doesn't get any interaction, so I think it would be nice to at least start with it appearing in the "All" tab.
+			p How: LCB automatically subscribes to communities from external instances <b>until a normal user subscribes too</b>. Then it will unsubscribe to not manipulate the community's subscriber count. Also it does not allow instances that are not guaranteed by Fediseer or are NSFW. (pls note that in version 0.19, it will unsubscribe after a month instead because of this issue: <a href="https://github.com/LemmyNet/lemmy/issues/4144" target="_blank">https://github.com/LemmyNet/lemmy/issues/4144</a>)
+			p If you are an instance admin, the instances and users used are listed below. If you want to add or remove a user from this tool, you can contact me.
+			p Contact me from lemmy: <a href="https://lemy.lol/u/iso">@iso@lemy.lol</a> or email: iso{at}lemy.lol
+			p LCB is open source and you can find the disgusting source code <a href="https://github.com/ismailkarsli/lemmy-community-boost" target="_blank">here</a>.
+		form#input(action="/", method="post") 
+			fieldset
+				input(type="text", name="community", placeholder="technology@lemmy.world...")
+				input(type="submit", value="Add")
+		div#status(style="display: none")
+		span#loading(style='display: none')
+			svg(width='16' height='16' viewbox='0 0 24 24' xmlns='http://www.w3.org/2000/svg')
+				style.
+					.spinner_P7sC{transform-origin:center;animation:spinner_svv2 .75s infinite linear}@keyframes spinner_svv2{100%{transform:rotate(360deg)}}
+				path.spinner_P7sC(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z')
+		if communities
+			h2 Communities
+			table#communities
+				thead
+					tr
+						th Name
+						th Instance
+						th Status
+						th Last updated
+						th Remaining instances
+				tbody
+					each com in communities
+						tr(data-name=com.name, data-host=com.host)
+							td= com.name
+							td= com.host
+							td
+								if com.progress.filter(p => p.status).length == com.progress.length
+									span= "✅ "
+								span= com.progress.filter(p => p.status).length + "/" + com.progress.length
+							td= new Intl.RelativeTimeFormat("en").format(Math.floor((new Date() - new Date(com.date)) / (1000 * 60)) * -1, "minute")
+							td= com.progress.filter(p => !p.status).map(p => p.host).join(", ")
+			p(style="font-size: 0.9rem") * In instances using version 0.19, the unsubscribe process takes place after 1 month. Therefore, even if they are in "remaining" status here, they probably have been subscribed.
+		if instances 
+			h2 Instances/Users
+			table#instances 
+				thead
+					tr
+						th Instance
+						th Username
+				tbody
+					each inst in instances
+						tr
+							td= inst.host
+							td= inst.username
+					else 
+						tr
+							td No instances yet
+		script(type="module").
+			const form = document.querySelector("form#input")
+			form.addEventListener("submit", async (e) => {
+				e.preventDefault()
+				const loading = document.querySelector("#loading")
+				removeStatus()
+				try {
+					if (loading) loading.style.display = "flex"
+					form.childNodes.forEach(n => n.disabled = true)
+					const input = form.querySelector("input[type=text]")
+					if(!input.value) {
+						return addStatus(false, "Please enter a community name")
+					}
+					const response = await fetch("/", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({community: input.value})
+					}).then(r => r.json())
+					addStatus(response.success, response.message)
+					if(response.success) {
+						input.value = ""
+						// delete old list item
+						const oldItem = document.querySelector(`#communities tr[data-name="${response.community.name}"][data-host="${response.community.host}"]`)
+						if(oldItem) oldItem.remove()
+						// add new list item
+						const table = document.querySelector("table#communities tbody")
+						const row = document.createElement("tr")
+						row.dataset.name = response.community.name
+						row.dataset.host = response.community.host
+						const name = document.createElement("td")
+						name.innerText = response.community.name
+						const host = document.createElement("td")
+						host.innerText = response.community.host
+						const status = document.createElement("td")
+						status.innerText = "no process yet"
+						const date = document.createElement("td")
+						date.innerText = "now"
+						const remaining = document.createElement("td")
+						remaining.innerText = "?"
+						row.append(name, host, status, date, remaining)
+						table.prepend(row)
+					}
+				} catch(e) {
+					console.error(e)
+					addStatus(false, "Something went wrong")
+				} finally {
+					if (loading) loading.style.display = "none"
+					form.childNodes.forEach(n => n.disabled = false)
+				}
+			})
+			function addStatus(success, message) {
+				const status = document.querySelector("div#status")
+				status.innerText = message
+				status.style.display = "block"
+				if(success) {
+					status.style.color = "green"
+				} else {
+					status.style.color = "red"
+				}
+			}
+			function removeStatus() {
+				const status = document.querySelector("div#status")
+				status.style.display = "none"
+			}
+	style.
+		body {
+			font-family: sans-serif;
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 0;
+		}
+		fieldset {
+			display: flex;
+			border: none;
+			margin: 0;
+			padding: 0;
+		}
+		form input {
+			width: 100%;
+			padding: 10px;
+			margin: 4px 0;
+			border: 1px solid #ccc;
+			outline: none;
+			border-radius: 0;
+			box-sizing: border-box;
+		}
+		form input[type=submit] {
+			width: auto;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			cursor: pointer;
+			min-width: 100px;
+		}
+		form input[type=submit]:hover {
+			background-color: #45a049;
+		}
+		form input[type=submit]:disabled {
+			background-color: #cccccc;
+			cursor: not-allowed;
+		}
+		#status {
+			margin: 0;
+			padding: 0;
+			text-align: center;
+		}
+		#loading {
+			display: flex;
+			justify-content: center;
+		}
+		table {
+			border-collapse: collapse;
+			width: 100%;
+		}
+		th, td {
+			text-align: left;
+			padding: 8px;
+		}
+		tr:nth-child(even) {
+			background-color: #f2f2f2;
+		}
+		tr:hover {
+			background-color: #ddd;
+		}
+		th {
+			background-color: #4CAF50;
+			color: white;
+		}
+		

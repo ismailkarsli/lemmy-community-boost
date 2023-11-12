@@ -1,0 +1,32 @@
+{
+  "name": "lemmy-community-boost",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "dev": "nodemon index.ts"
+  },
+  "keywords": [],
+  "author": "İsmail Karslı <cszn@protonmail.ch>",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/formbody": "^7.4.0",
+    "@fastify/view": "^8.2.0",
+    "@seald-io/nedb": "^4.0.2",
+    "fastify": "^4.24.3",
+    "lemmy-js-client_19": "npm:lemmy-js-client@^0.19.0-rc.14",
+    "lemmy-js-client_18": "npm:lemmy-js-client@^0.18",
+    "pug": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/pug": "^2.0.9",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=9"
+  }
+}
