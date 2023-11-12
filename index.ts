@@ -27,7 +27,10 @@ startPeriodicCheck();
 fastify.get("/", async (_request, reply) => {
   const communities = await communityDb.findAsync({}).sort({ date: -1 });
   const instances = await instanceDb.findAsync({});
-  return reply.view("/index.pug", { instances, communities });
+  return reply.view("/index.pug", {
+    instances: instances.map((i) => ({ host: i.host, username: i.username })),
+    communities,
+  });
 });
 
 fastify.post("/", async (request, reply) => {
@@ -124,7 +127,7 @@ fastify.setErrorHandler((error, _request, reply) => {
   }
 });
 
-fastify.listen({ port: 3000 }, (err, address) => {
+fastify.listen({ port: 3000, host: "0.0.0.0" }, (err, address) => {
   if (err) throw err;
   console.info(`Server is now listening on ${address}`);
 });

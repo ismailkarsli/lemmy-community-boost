@@ -1,0 +1,6 @@
+/data/*.db
+/node_modules
+Dockerfile
+.dockerignore
+*.log
+*.md
