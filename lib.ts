@@ -36,7 +36,6 @@ export async function conditionalFollow({
     const progress = localCommunity.progress;
     // if the progress is all done and instance info is up to date, skip
     if (
-      progress.length === localUsers.length &&
       localUsers.every((u) =>
         progress.some((p) => p.host === u.host && p.status === "done")
       )

@@ -58,7 +58,7 @@ html(lang="en")
 										if com.progress.filter(p => p.status === "error").length
 											span= " ❌ " + com.progress.filter(p => p.status === "error").length
 								if com.updatedAt
-									td= ((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'day') : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'minute')
+									td= ((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'day') : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60), 'minute')
 								else
 									td= "Never"
 								td= ((com.createdAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? "Today" : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.createdAt - new Date()) / 1000 / 60 / 60 / 24), 'day')
