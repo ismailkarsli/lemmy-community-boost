@@ -30,15 +30,26 @@ startPeriodicCheck();
 
 fastify.get("/", async (_request, reply) => {
   const communities = await communityDb
-    .findAsync({})
-    .sort({ createdAt: -1, updatedAt: -1 })
-    .limit(500);
+    .findAsync({
+      $where: function () {
+        return (
+          this.progress.length === 0 ||
+          this.progress.some((p: { status: string }) => p.status !== "done")
+        );
+      },
+    })
+    .sort({ createdAt: -1, updatedAt: -1 });
+  const total = await communityDb.countAsync({});
   const instances = await instanceDb.findAsync({});
   return reply.view("/index.pug", {
     instances: instances.map((i) => ({ host: i.host, username: i.username })),
     communities,
     interval: INTERVAL / 1000 / 60,
     announcement: ANNOUNCEMENT,
+    stats: {
+      total,
+      inProgress: communities.length,
+    },
   });
 });
 
@@ -135,6 +146,9 @@ fastify.post("/", async (request, reply) => {
 });
 
 fastify.get("/favicon.ico", async (_, reply) => reply.status(204).send());
+fastify.get("/healthcheck", async (_, reply) =>
+  reply.header("X-Robots-Tag", "noindex").send("I'm ok daddy <3")
+);
 // Error handler
 fastify.setErrorHandler((error, _request, reply) => {
   if (error instanceof AppError) {

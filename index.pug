@@ -65,6 +65,9 @@ html(lang="en")
 									else
 										td(data-label="Last updated")= "Never"
 									td(data-label="Added" data-date=com.createdAt)= com.createdAt.toLocaleDateString()
+				div(style="margin-top: 12px; text-align: right;")
+					p Total of #{stats.total} communities (#{stats.total - stats.inProgress} completed, #{stats.inProgress} in progress)
+
 				div(style="margin-top: 12px;")
 					p ✅ = Another user subscribed to this community so LCB unsubscribed and the community is now federated.
 					p ⏳ = LCB subscribed to this community but no one else subscribed yet.
