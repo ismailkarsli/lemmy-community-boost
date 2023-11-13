@@ -31,7 +31,7 @@ startPeriodicCheck();
 fastify.get("/", async (_request, reply) => {
   const communities = await communityDb
     .findAsync({})
-    .sort({ updatedAt: -1 })
+    .sort({ createdAt: -1, updatedAt: -1 })
     .limit(500);
   const instances = await instanceDb.findAsync({});
   return reply.view("/index.pug", {

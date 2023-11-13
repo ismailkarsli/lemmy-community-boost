@@ -61,10 +61,10 @@ html(lang="en")
 											if com.progress.filter(p => p.status === "error").length
 												span= " ❌ " + com.progress.filter(p => p.status === "error").length
 									if com.updatedAt
-										td(data-label="Last updated")= ((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'day') : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60), 'minute')
+										td(data-label="Last updated" data-date=com.updatedAt)= com.updatedAt.toLocaleDateString()
 									else
 										td(data-label="Last updated")= "Never"
-									td(data-label="Added")= ((com.createdAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? "Today" : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.createdAt - new Date()) / 1000 / 60 / 60 / 24), 'day')
+									td(data-label="Added" data-date=com.createdAt)= com.createdAt.toLocaleDateString()
 				div(style="margin-top: 12px;")
 					p ✅ = Another user subscribed to this community so LCB unsubscribed and the community is now federated.
 					p ⏳ = LCB subscribed to this community but no one else subscribed yet.
@@ -90,6 +90,26 @@ html(lang="en")
 			div LCB is open source and you can find the disgusting source code <a href="https://github.com/ismailkarsli/lemmy-community-boost" target="_blank">here</a>.
 			div Contact me from lemmy: <a href="https://lemy.lol/u/iso">@iso@lemy.lol</a> or email: iso{at}lemy.lol
 
+		script.
+			const date = document.querySelectorAll("td[data-date]")
+			date.forEach(d => {
+				const diff = Math.round((new Date(d.dataset.date) - new Date()) / 1000);
+				if(Math.abs(diff) < 60)
+					d.innerText = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(diff, 'second')
+				else if(Math.abs(diff) < 60 * 60)
+					d.innerText = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round(diff / 60), 'minute')
+				else if(Math.abs(diff) < 60 * 60 * 24)
+					d.innerText = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round(diff / 60 / 60), 'hour')
+				else if(Math.abs(diff) < 60 * 60 * 24 * 7)
+					d.innerText = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round(diff / 60 / 60 / 24), 'day')
+				else if(Math.abs(diff) < 60 * 60 * 24 * 30)
+					d.innerText = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round(diff / 60 / 60 / 24 / 7), 'week')
+				else if(Math.abs(diff) < 60 * 60 * 24 * 365)
+					d.innerText = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round(diff / 60 / 60 / 24 / 30), 'month')
+				else 
+					d.innerText = new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round(diff / 60 / 60 / 24 / 365), 'year')
+				
+			})
 		script(type="module").
 			const form = document.querySelector("form#input")
 			form.addEventListener("submit", async (e) => {
@@ -126,12 +146,13 @@ html(lang="en")
 						const status = document.createElement("td")
 						status.title = "Done/Pending/Failed"
 						status.innerText = "⏳"
-						const date = document.createElement("td")
-						date.innerText = "today"
-						const remaining = document.createElement("td")
-						remaining.innerText = response.community.progress.filter(p => !p.status).map(p => p.host).join(", ")
+						const updatedAt = document.createElement("td")
+						updatedAt.innerText = "Never"
+						const createdAt = document.createElement("td")
+						createdAt.innerText = "Just now"
+						
 
-						row.append(name, host, status, date, remaining)
+						row.append(name, host, status, updatedAt, createdAt)
 						table.prepend(row)
 					}
 				} catch(e) {

@@ -35,15 +35,13 @@ export async function conditionalFollow({
     localCommunities = await communityDb.findAsync({}).sort({ updatedAt: 1 });
   for (const localCommunity of localCommunities) {
     const progress = localCommunity.progress;
-    // if the progress is all done and instance info is up to date, skip
-    if (
-      localUsers.every((u) =>
-        progress.some((p) => p.host === u.host && p.status === "done")
-      )
-    ) {
-      continue;
-    }
+    let progressChanged = false;
     for (const localUser of localUsers) {
+      const record = progress.find((r) => r.host === localUser.host);
+      if (record?.status === "done") {
+        continue;
+      }
+      progressChanged = true;
       let status: "pending" | "done" | "error" = "pending";
       try {
         const client = await getClient(localUser);
@@ -101,10 +99,12 @@ export async function conditionalFollow({
         }
       }
     }
-    await communityDb.updateAsync(
-      { host: localCommunity.host, name: localCommunity.name },
-      { $set: { progress, updatedAt: new Date() } }
-    );
+    if (progressChanged) {
+      await communityDb.updateAsync(
+        { host: localCommunity.host, name: localCommunity.name },
+        { $set: { progress, updatedAt: new Date() } }
+      );
+    }
   }
 }
 
