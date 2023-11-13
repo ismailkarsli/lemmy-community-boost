@@ -43,7 +43,10 @@ if (INSTANCE_USERS) {
       community.progress = community.progress.filter((p) =>
         newUsers.some((u) => u.host === p.host)
       );
-      await communityDb.updateAsync({ host: community.host }, community);
+      await communityDb.updateAsync(
+        { host: community.host },
+        { $set: { progress: community.progress } }
+      );
     }
   })();
 }
