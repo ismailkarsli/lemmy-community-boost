@@ -49,7 +49,12 @@ export async function conditionalFollow({
           client,
           `${localCommunity.name}@${localCommunity.host}`
         );
-        if (client instanceof LemmyHttp18 && community.counts.subscribers > 1) {
+
+        if (
+          client instanceof LemmyHttp18 &&
+          community.counts.subscribers >
+            (community.subscribed === "NotSubscribed" ? 0 : 1)
+        ) {
           // Unfollow if there are other followers than the bot
           await client.followCommunity({
             community_id: community.community.id,
