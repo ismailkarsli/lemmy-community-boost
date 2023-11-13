@@ -37,5 +37,13 @@ if (INSTANCE_USERS) {
     await instanceDb.removeAsync({}, { multi: true });
     // Insert new users
     await instanceDb.insertAsync(newUsers);
+    // Remove deleted instances from community progress
+    const communities = await communityDb.findAsync({});
+    for (const community of communities) {
+      community.progress = community.progress.filter((p) =>
+        newUsers.some((u) => u.host === p.host)
+      );
+      await communityDb.updateAsync({ host: community.host }, community);
+    }
   })();
 }

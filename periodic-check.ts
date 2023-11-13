@@ -6,8 +6,9 @@ export const startPeriodicCheck = async () => {
   try {
     while (true) {
       await new Promise((resolve) => setTimeout(resolve, INTERVAL));
-      console.info("Periodic check", new Date());
+      console.info("Periodic check started", new Date());
       await conditionalFollow();
+      console.info("Periodic check finished", new Date());
     }
   } catch (e) {
     console.error(e);
