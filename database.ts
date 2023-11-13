@@ -40,12 +40,12 @@ if (INSTANCE_USERS) {
     // Remove deleted instances from community progress
     const communities = await communityDb.findAsync({});
     for (const community of communities) {
-      community.progress = community.progress.filter((p) =>
+      const progress = community.progress.filter((p) =>
         newUsers.some((u) => u.host === p.host)
       );
       await communityDb.updateAsync(
-        { host: community.host },
-        { $set: { progress: community.progress } }
+        { host: community.host, name: community.name },
+        { $set: { progress } }
       );
     }
   })();

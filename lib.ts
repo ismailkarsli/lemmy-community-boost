@@ -31,7 +31,8 @@ export async function conditionalFollow({
   localCommunities?: LocalCommunity[];
 } = {}) {
   if (!localUsers) localUsers = await instanceDb.findAsync({});
-  if (!localCommunities) localCommunities = await communityDb.findAsync({});
+  if (!localCommunities)
+    localCommunities = await communityDb.findAsync({}).sort({ updatedAt: 1 });
   for (const localCommunity of localCommunities) {
     const progress = localCommunity.progress;
     // if the progress is all done and instance info is up to date, skip
