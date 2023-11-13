@@ -5,8 +5,9 @@ export const INTERVAL = Number(process.env.INTERVAL) || 1000 * 60 * 60; // 1 hou
 export const startPeriodicCheck = async () => {
   try {
     while (true) {
-      await conditionalFollow();
       await new Promise((resolve) => setTimeout(resolve, INTERVAL));
+      console.info("Periodic check", new Date());
+      await conditionalFollow();
     }
   } catch (e) {
     console.error(e);

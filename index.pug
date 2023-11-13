@@ -40,6 +40,7 @@ html(lang="en")
 							th Name
 							th Instance
 							th Status
+							th Last updated
 							th Added
 					tbody
 						each com in communities
@@ -56,7 +57,11 @@ html(lang="en")
 											span= " ⏳ " + com.progress.filter(p => p.status === "pending").length
 										if com.progress.filter(p => p.status === "error").length
 											span= " ❌ " + com.progress.filter(p => p.status === "error").length
-								td= ((com.date - new Date()) / 1000 / 60 / 60 / 24) > 1 ? "Today" : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.date - new Date()) / 1000 / 60 / 60 / 24), 'day')
+								if com.updatedAt
+									td= ((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'day') : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'minute')
+								else
+									td= "Never"
+								td= ((com.createdAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? "Today" : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.createdAt - new Date()) / 1000 / 60 / 60 / 24), 'day')
 				div(style="margin-top: 12px;")
 					p ✅ = Another user subscribed to this community so LCB unsubscribed and the community is now federated.
 					p ⏳ = LCB subscribed to this community but no one else subscribed yet.

@@ -28,7 +28,7 @@ fastify.register(formBody);
 startPeriodicCheck();
 
 fastify.get("/", async (_request, reply) => {
-  const communities = await communityDb.findAsync({}).sort({ date: -1 });
+  const communities = await communityDb.findAsync({}).sort({ createdAt: -1 });
   const instances = await instanceDb.findAsync({});
   return reply.view("/index.pug", {
     instances: instances.map((i) => ({ host: i.host, username: i.username })),
@@ -107,13 +107,13 @@ fastify.post("/", async (request, reply) => {
   if (exists) {
     await communityDb.updateAsync(
       { host, name },
-      { ...exists, date: new Date(), progress: [] }
+      { ...exists, createdAt: new Date(), updatedAt: new Date(), progress: [] }
     );
   } else {
     await communityDb.insertAsync({
       host,
       name,
-      date: new Date(),
+      createdAt: new Date(),
       progress: [],
     });
   }

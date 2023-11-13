@@ -53,7 +53,7 @@ export async function conditionalFollow({
           continue;
         } else if (
           // Subscribe for a month instead of above
-          localCommunity.date.getTime() + 1000 * 60 * 60 * 24 * 30 <
+          localCommunity.createdAt.getTime() + 1000 * 60 * 60 * 24 * 30 <
           Date.now()
         ) {
           await followCommunity(client, {
@@ -94,7 +94,7 @@ export async function conditionalFollow({
     }
     await communityDb.updateAsync(
       { host: localCommunity.host, name: localCommunity.name },
-      { $set: { progress } }
+      { $set: { progress, updatedAt: new Date() } }
     );
   }
 }

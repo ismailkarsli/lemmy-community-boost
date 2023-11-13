@@ -5,7 +5,8 @@ export interface LocalCommunity {
   host: string;
   name: string;
   progress: { host: string; status: "pending" | "done" | "error" }[];
-  date: Date;
+  createdAt: Date;
+  updatedAt?: Date;
 }
 export const communityDb = new Datastore<LocalCommunity>({
   filename: "./data/communities.db",
