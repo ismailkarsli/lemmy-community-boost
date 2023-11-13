@@ -3,7 +3,11 @@ import { LemmyHttp as LemmyHttp18 } from "lemmy-js-client_18";
 import { LocalCommunity, LocalUser, communityDb, instanceDb } from "./database";
 import { AppError } from "./error";
 
-// LemmyHttp18 wants jwt in function calls but it doesn't included in itself like 19. So I extended it to add jwt in every request.
+export const HEADERS = {
+  "User-Agent": "lcb-bot/1.0.0",
+};
+
+// LemmyHttp18 wants jwt in function calls but it doesn't included in itself like 19. So I extended it to be able add jwt in every request.
 class LemmyHttp18WithJWT extends LemmyHttp18 {
   jwt: string;
   constructor(jwt: string, ...args: ConstructorParameters<typeof LemmyHttp18>) {
@@ -102,15 +106,9 @@ export async function getClient(
   const version = nodeInfo?.software?.version;
   let client;
   if (version?.startsWith("0.18")) {
-    client = new LemmyHttp18(`https://${user.host}`);
-  } else if (version?.startsWith("0.19")) {
-    client = new LemmyHttp19(`https://${user.host}`);
+    client = new LemmyHttp18(`https://${user.host}`, { headers: HEADERS });
   } else {
-    throw new AppError(
-      `Unsupported version: ${version}, host: ${
-        user.host
-      }, nodeInfo: ${JSON.stringify(nodeInfo)}`
-    );
+    client = new LemmyHttp19(`https://${user.host}`, { headers: HEADERS });
   }
   let jwt: string | undefined;
   if (user.jwt) jwt = user.jwt;
@@ -131,9 +129,12 @@ export async function getClient(
     client.setHeaders({
       Authorization: `Bearer ${jwt}`,
       Cookie: `jwt=${jwt}`,
+      ...HEADERS,
     });
   } else if (jwt && client instanceof LemmyHttp18) {
-    client = new LemmyHttp18WithJWT(jwt, `https://${user.host}`);
+    client = new LemmyHttp18WithJWT(jwt, `https://${user.host}`, {
+      headers: HEADERS,
+    });
   }
   return client as LemmyHttp;
 }
@@ -151,9 +152,9 @@ async function getNodeInfo(host: string): Promise<NodeInfo> {
   if (cached && cached.timestamp + 1000 * 60 * 60 > Date.now()) {
     return cached.info;
   }
-  const nodeInfo = await fetch(`https://${host}/nodeinfo/2.0.json`).then((r) =>
-    r.json()
-  );
+  const nodeInfo = await fetch(`https://${host}/nodeinfo/2.0.json`, {
+    headers: HEADERS,
+  }).then((r) => r.json());
   nodeInfoCache.set(host, { info: nodeInfo, timestamp: Date.now() });
   return nodeInfo;
 }
@@ -215,10 +216,12 @@ export async function fediseerStatus(
 ): Promise<{ guarantees: number; censures: number }> {
   try {
     const guarantees = await fetch(
-      `https://fediseer.com/api/v1/guarantees/${host}?domains=true`
+      `https://fediseer.com/api/v1/guarantees/${host}?domains=true`,
+      { headers: HEADERS }
     ).then((r) => r.json());
     const censures = await fetch(
-      `https://fediseer.com/api/v1/censures/${host}?domains=true`
+      `https://fediseer.com/api/v1/censures/${host}?domains=true`,
+      { headers: HEADERS }
     ).then((r) => r.json());
 
     if (!guarantees?.domains) {

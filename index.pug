@@ -19,7 +19,7 @@ html(lang="en")
 				p LCB will not subscribe to instances/communities that are:
 				ul
 					li Not guaranteed on Fediseer
-					li Has more than 2 censures on Fediseer
+					li Has 3 or more censures on Fediseer
 					li NSFW flagged
 					li Blacklisted manually
 			form#input(action="/", method="post") 
@@ -76,7 +76,8 @@ html(lang="en")
 						else 
 							tr
 								td No instances yet
-		footer 
+		footer
+			div LCB checks instance subscribe status every #{Math.floor(interval)} minutes and uses "lcb-bot/1.0.0" user-agent for requests.
 			div If you are an instance admin, the instances and users used are listed above. If you want to add or remove a user from this tool, you can contact me.
 			div LCB is open source and you can find the disgusting source code <a href="https://github.com/ismailkarsli/lemmy-community-boost" target="_blank">here</a>.
 			div Contact me from lemmy: <a href="https://lemy.lol/u/iso">@iso@lemy.lol</a> or email: iso{at}lemy.lol
@@ -118,7 +119,7 @@ html(lang="en")
 						status.title = "Done/Pending/Failed"
 						status.innerText = "⏳"
 						const date = document.createElement("td")
-						date.innerText = "0 hours"
+						date.innerText = "today"
 						const remaining = document.createElement("td")
 						remaining.innerText = response.community.progress.filter(p => !p.status).map(p => p.host).join(", ")
 

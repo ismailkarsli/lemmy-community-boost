@@ -9,7 +9,7 @@ import {
   getCommunity,
   fediseerStatus,
 } from "./lib";
-import { startPeriodicCheck } from "./periodic-check";
+import { INTERVAL, startPeriodicCheck } from "./periodic-check";
 import { AppError } from "./error";
 
 const BLACKLISTED_INSTANCES =
@@ -33,6 +33,7 @@ fastify.get("/", async (_request, reply) => {
   return reply.view("/index.pug", {
     instances: instances.map((i) => ({ host: i.host, username: i.username })),
     communities,
+    interval: INTERVAL / 1000 / 60,
   });
 });
 

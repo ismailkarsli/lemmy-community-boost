@@ -1,6 +1,6 @@
 import { conditionalFollow } from "./lib";
 
-const INTERVAL = Number(process.env.INTERVAL) || 1000 * 60 * 60; // 1 hour
+export const INTERVAL = Number(process.env.INTERVAL) || 1000 * 60 * 60; // 1 hour
 
 export const startPeriodicCheck = async () => {
   try {
