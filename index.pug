@@ -41,8 +41,9 @@ html(lang="en")
 							td= com.host
 							td
 								if com.progress.filter(p => p.status).length == com.progress.length
-									span= "✅ "
-								span= com.progress.filter(p => p.status).length + "/" + com.progress.length
+									span= "✅"
+								else
+									span= com.progress.filter(p => p.status).length + "/" + com.progress.length
 							td= new Intl.RelativeTimeFormat("en").format(Math.floor((new Date() - new Date(com.date)) / (1000 * 60)) * -1, "minute")
 							td= com.progress.filter(p => !p.status).map(p => p.host).join(", ")
 			p(style="font-size: 0.9rem") * In instances using version 0.19, the unsubscribe process takes place after 1 month. Therefore, even if they are in "remaining" status here, they probably have been subscribed.
