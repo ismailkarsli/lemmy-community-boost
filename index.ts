@@ -28,9 +28,7 @@ fastify.register(formBody);
 startPeriodicCheck();
 
 fastify.get("/", async (_request, reply) => {
-  const communities = await communityDb
-    .findAsync({})
-    .sort({ createdAt: -1, updatedAt: -1 });
+  const communities = await communityDb.findAsync({}).sort({ updatedAt: -1 });
   const instances = await instanceDb.findAsync({});
   return reply.view("/index.pug", {
     instances: instances.map((i) => ({ host: i.host, username: i.username })),
