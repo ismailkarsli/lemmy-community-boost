@@ -34,6 +34,15 @@ export async function conditionalFollow({
   if (!localCommunities) localCommunities = await communityDb.findAsync({});
   for (const localCommunity of localCommunities) {
     const progress = localCommunity.progress;
+    // if the progress is all done and instance info is up to date, skip
+    if (
+      progress.length === localUsers.length &&
+      localUsers.every((u) =>
+        progress.some((p) => p.host === u.host && p.status === "done")
+      )
+    ) {
+      continue;
+    }
     for (const localUser of localUsers) {
       let status: "pending" | "done" | "error" = "pending";
       try {
