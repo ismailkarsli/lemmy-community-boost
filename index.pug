@@ -22,6 +22,8 @@ html(lang="en")
 					li Has 3 or more censures on Fediseer
 					li NSFW flagged
 					li Blacklisted manually
+			if announcement
+				div#announcement= announcement
 			form#input(action="/", method="post") 
 				fieldset
 					input(type="text", name="community", placeholder="technology@lemmy.world...")
@@ -34,34 +36,35 @@ html(lang="en")
 					path.spinner_P7sC(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z')
 			if communities
 				h2 Communities
-				table#communities
-					thead
-						tr
-							th Name
-							th Instance
-							th Status
-							th Last updated
-							th Added
-					tbody
-						each com in communities
-							tr(data-name=com.name, data-host=com.host)
-								td= com.name
-								td= com.host
-								td(title=com.progress.map(p => (p.status === "done" ? "✅ " : p.status === "pending" ? "⏳ " : "❌ ")+ p.host).join("\n"))
-									if com.progress.filter(p => p.status === "done").length == com.progress.length
-										span= "✅"
+				.table-responsive
+					table#communities
+						thead
+							tr
+								th(scope="col") Community name
+								th(scope="col") Instance
+								th(scope="col") Status
+								th(scope="col") Last updated
+								th(scope="col") Added
+						tbody
+							each com in communities
+								tr(data-name=com.name, data-host=com.host)
+									td(data-label="Community name" scope="row")= com.name
+									td(data-label="Instance")= com.host
+									td(data-label="Status" title=com.progress.map(p => (p.status === "done" ? "✅ " : p.status === "pending" ? "⏳ " : "❌ ")+ p.host).join("\n"))
+										if com.progress.filter(p => p.status === "done").length == com.progress.length
+											span= "✅"
+										else
+											if com.progress.filter(p => p.status === "done").length
+												span= " ✅ " + com.progress.filter(p => p.status === "done").length
+											if com.progress.filter(p => p.status === "pending").length
+												span= " ⏳ " + com.progress.filter(p => p.status === "pending").length
+											if com.progress.filter(p => p.status === "error").length
+												span= " ❌ " + com.progress.filter(p => p.status === "error").length
+									if com.updatedAt
+										td(data-label="Last updated")= ((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'day') : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60), 'minute')
 									else
-										if com.progress.filter(p => p.status === "done").length
-											span= " ✅ " + com.progress.filter(p => p.status === "done").length
-										if com.progress.filter(p => p.status === "pending").length
-											span= " ⏳ " + com.progress.filter(p => p.status === "pending").length
-										if com.progress.filter(p => p.status === "error").length
-											span= " ❌ " + com.progress.filter(p => p.status === "error").length
-								if com.updatedAt
-									td= ((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60 / 60 / 24), 'day') : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.updatedAt - new Date()) / 1000 / 60), 'minute')
-								else
-									td= "Never"
-								td= ((com.createdAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? "Today" : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.createdAt - new Date()) / 1000 / 60 / 60 / 24), 'day')
+										td(data-label="Last updated")= "Never"
+									td(data-label="Added")= ((com.createdAt - new Date()) / 1000 / 60 / 60 / 24) > 1 ? "Today" : new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round((com.createdAt - new Date()) / 1000 / 60 / 60 / 24), 'day')
 				div(style="margin-top: 12px;")
 					p ✅ = Another user subscribed to this community so LCB unsubscribed and the community is now federated.
 					p ⏳ = LCB subscribed to this community but no one else subscribed yet.
@@ -71,13 +74,13 @@ html(lang="en")
 				table#instances 
 					thead
 						tr
-							th Instance
-							th Username
+							th(scope="col") Instance
+							th(scope="col") Username
 					tbody
 						each inst in instances
 							tr
-								td= inst.host
-								td= inst.username
+								td(data-label="Instance" scope="row")= inst.host
+								td(data-label="Username")= inst.username
 						else 
 							tr
 								td No instances yet
@@ -202,9 +205,29 @@ html(lang="en")
 			display: flex;
 			justify-content: center;
 		}
+		#announcement {
+			margin: 1rem 0;
+			padding: 1rem;
+			background-color: #f2f2f2;
+			border-radius: 4px;
+		}
+		
+		.table-responsive {
+			max-width: 100%;
+			max-height: 540px;
+			overflow-x: auto;
+			position: relative;
+		}
 		table {
 			border-collapse: collapse;
+			table-layout: fixed;
+			margin: 0;
+			padding: 0;
 			width: 100%;
+		}
+		table thead th {
+			position: sticky;
+			top: 0;
 		}
 		th, td {
 			text-align: left;
@@ -220,6 +243,41 @@ html(lang="en")
 			background-color: #4CAF50;
 			color: white;
 		}
+		@media screen and (max-width: 600px) {
+			table {
+				border: 0;
+			}
+			table thead {
+				border: none;
+				clip: rect(0 0 0 0);
+				height: 1px;
+				margin: -1px;
+				overflow: hidden;
+				padding: 0;
+				position: absolute;
+				width: 1px;
+			}
+			table tr {
+				border-bottom: 3px solid #ddd;
+				display: block;
+				margin-bottom: .625em;
+			}
+			table td {
+				border-bottom: 1px solid #ddd;
+				display: block;
+				font-size: .9em;
+				text-align: right;
+				background-color: #f2f2f2;
+			}
+			table td::before {
+				content: attr(data-label);
+				float: left;
+			}
+			table td:last-child {
+				border-bottom: 0;
+			}
+		}
+		
 		footer {
 			margin-top: 20px;
 			font-size: 0.8rem;

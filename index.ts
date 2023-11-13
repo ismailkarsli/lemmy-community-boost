@@ -14,6 +14,7 @@ import { AppError } from "./error";
 
 const BLACKLISTED_INSTANCES =
   process.env.BLACKLISTED_INSTANCES?.split(",") || [];
+const ANNOUNCEMENT = process.env.ANNOUNCEMENT;
 
 const fastify = Fastify({
   logger: true,
@@ -28,12 +29,16 @@ fastify.register(formBody);
 startPeriodicCheck();
 
 fastify.get("/", async (_request, reply) => {
-  const communities = await communityDb.findAsync({}).sort({ updatedAt: -1 });
+  const communities = await communityDb
+    .findAsync({})
+    .sort({ updatedAt: -1 })
+    .limit(500);
   const instances = await instanceDb.findAsync({});
   return reply.view("/index.pug", {
     instances: instances.map((i) => ({ host: i.host, username: i.username })),
     communities,
     interval: INTERVAL / 1000 / 60,
+    announcement: ANNOUNCEMENT,
   });
 });
 
