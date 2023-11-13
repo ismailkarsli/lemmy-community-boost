@@ -4,7 +4,7 @@ import Datastore from "@seald-io/nedb";
 export interface LocalCommunity {
   host: string;
   name: string;
-  progress: { host: string; status: boolean }[];
+  progress: { host: string; status: "pending" | "done" | "error" }[];
   date: Date;
 }
 export const communityDb = new Datastore<LocalCommunity>({

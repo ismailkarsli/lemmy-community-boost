@@ -31,7 +31,7 @@ export async function conditionalFollow({
   for (const localCommunity of localCommunities) {
     const progress = localCommunity.progress;
     for (const localUser of localUsers) {
-      let status = false;
+      let status: "pending" | "done" | "error" = "pending";
       try {
         const client = await getClient(localUser);
         const community = await getCommunity(
@@ -45,7 +45,7 @@ export async function conditionalFollow({
             follow: false,
             auth: client.jwt,
           });
-          status = true;
+          status = "done";
           continue;
         } else if (
           // Subscribe for a month instead of above
@@ -56,7 +56,7 @@ export async function conditionalFollow({
             community_id: community.community.id,
             follow: false,
           });
-          status = true;
+          status = "done";
           continue;
         } else if (community.subscribed === "NotSubscribed") {
           // Subscribe to the community if not subscribed
@@ -64,19 +64,21 @@ export async function conditionalFollow({
             community_id: community.community.id,
             follow: true,
           });
+          status = "pending";
         } else if (community.subscribed === "Pending") {
           // Unsubscribe if stuck pending and let next iteration to subscribe
           await followCommunity(client, {
             community_id: community.community.id,
             follow: false,
           });
+          status = "error";
         }
       } catch (e) {
         console.error(
           `Error while checking !${localCommunity.name}@${localCommunity.host} with @${localUser.username}@${localUser.host}:`,
           e
         );
-        status = false;
+        status = "error";
       } finally {
         const record = progress.findIndex((r) => r.host === localUser.host);
         if (record === -1) {
@@ -208,13 +210,33 @@ export async function followCommunity(
   }
 }
 
-export async function isFediseerGuaranteed(host: string): Promise<boolean> {
-  const request = await fetch(
-    `https://fediseer.com/api/v1/guarantees/${host}?domains=true`
-  ).then((r) => r.json());
+export async function fediseerStatus(
+  host: string
+): Promise<{ guarantees: number; censures: number }> {
+  try {
+    const guarantees = await fetch(
+      `https://fediseer.com/api/v1/guarantees/${host}?domains=true`
+    ).then((r) => r.json());
+    const censures = await fetch(
+      `https://fediseer.com/api/v1/censures/${host}?domains=true`
+    ).then((r) => r.json());
 
-  if (!request?.domains) {
-    throw new AppError(`Error while fetching data from Fediseer`);
+    if (!guarantees?.domains) {
+      throw new AppError(
+        `Error while fetching guarantor ${host} from Fediseer`
+      );
+    } else if (!censures?.domains) {
+      throw new AppError(`Error while fetching censures ${host} from Fediseer`);
+    }
+    return {
+      guarantees: guarantees.domains.length,
+      censures: censures.domains.length,
+    };
+  } catch (e) {
+    if (e instanceof AppError) throw e;
+    throw new AppError(
+      `Error while fetching status of ${host} from Fediseer: ` +
+        (e instanceof Error ? e?.message : e)
+    );
   }
-  return Boolean(request.domains.length);
 }

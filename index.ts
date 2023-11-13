@@ -7,10 +7,13 @@ import {
   conditionalFollow,
   getClient,
   getCommunity,
-  isFediseerGuaranteed,
+  fediseerStatus,
 } from "./lib";
 import { startPeriodicCheck } from "./periodic-check";
 import { AppError } from "./error";
+
+const BLACKLISTED_INSTANCES =
+  process.env.BLACKLISTED_INSTANCES?.split(",") || [];
 
 const fastify = Fastify({
   logger: true,
@@ -54,12 +57,23 @@ fastify.post("/", async (request, reply) => {
         "Invalid community name. It should be in 'community@instance' format.",
     };
   }
-
-  const isGuaranteed = await isFediseerGuaranteed(host);
-  if (!isGuaranteed) {
+  const blacklist = BLACKLISTED_INSTANCES.some((i) => i === host);
+  if (blacklist) {
     return {
       success: false,
-      message: `Instance ${host} is not guaranteed on Fediseer`,
+      message: `Instance ${host} is blacklisted`,
+    };
+  }
+
+  const status = await fediseerStatus(host);
+  if (!status.guarantees || status.censures >= 3) {
+    return {
+      success: false,
+      message: `Instance ${host} ${
+        !status.guarantees
+          ? "is not guaranteed"
+          : "has " + status.censures + " censures"
+      } on Fediseer`,
     };
   }
 
