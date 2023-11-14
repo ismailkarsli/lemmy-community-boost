@@ -8,20 +8,20 @@ html(lang="en")
 		#main
 			article
 				h1 Lemmy Community Boost
-				p LCB is a tool to "seed" beginner communities in the Lemmyverse.
+				p LCB is a tool to "seed" new communities in the Lemmyverse.
 				h4 The purpose
-				p Communities in Lemmy are only federated if a user is subscribed to an external instance. This means that new communities are not visible to external instance users. To fix that, LCB automatically subscribes to new communities <b>from external instances</b> to make them federated.
+				p Communities in Lemmy are only federated if users from remote instances subscribes. This means that new communities are not visible to remote instance users. This tool aims to solve this problem.
 				h4 Why 
 				p I think mods (including me) wouldn't want to put effort into a new community if it doesn't get any interaction, so I think it would be nice to at least start with it appearing in the "All" tab.
 				h4 How it works
-				p LCB automatically subscribes to communities from external instances <b>until a normal user subscribes</b>. Then it will unsubscribe to not manipulate the community's subscriber count.
-				h4 Prohibited
+				p LCB automatically subscribes to communities from remote instances <b>until a normal user subscribes</b>. Then it will unsubscribe to not manipulate the community's subscriber count. Instances are listed below.
 				p LCB will not subscribe to instances/communities that are:
 				ul
 					li Not guaranteed on Fediseer
 					li Has 3 or more censures on Fediseer
 					li NSFW flagged
-					li Blacklisted manually
+					if blacklist && blacklist.length
+						li Blacklisted manually (#{blacklist.join(", ")})
 			if announcement
 				div#announcement= announcement
 			form#input(action="/", method="post") 
@@ -69,9 +69,9 @@ html(lang="en")
 					p Total of #{stats.total} communities (#{stats.total - stats.inProgress} completed, #{stats.inProgress} in progress)
 
 				div(style="margin-top: 12px;")
-					p ✅ = Another user subscribed to this community so LCB unsubscribed and the community is now federated.
-					p ⏳ = LCB subscribed to this community but no one else subscribed yet.
-					p ❌ = LCB tried to subscribe to this community but failed.
+					div ✅ = Another user subscribed to this community so LCB unsubscribed and the community is now federated.
+					div ⏳ = LCB subscribed to this community but no one else subscribed yet.
+					div ❌ = LCB tried to subscribe to this community but failed.
 			if instances 
 				h2 Instances/Users
 				table#instances 
@@ -79,11 +79,13 @@ html(lang="en")
 						tr
 							th(scope="col") Instance
 							th(scope="col") Username
+							th(scope="col") Active
 					tbody
 						each inst in instances
 							tr
 								td(data-label="Instance" scope="row")= inst.host
 								td(data-label="Username")= inst.username
+								td(data-label="Active")= inst.active ? "✅" : "❌"
 						else 
 							tr
 								td No instances yet
@@ -316,6 +318,4 @@ html(lang="en")
 		h4 {
 			margin: 12px 0;
 		}
-		p {
-			margin: 2px 0;
-		}
+	

@@ -17,6 +17,7 @@ export interface LocalUser {
   host: string;
   username: string;
   password: string;
+  active: boolean;
   jwt?: string;
 }
 export const instanceDb = new Datastore<LocalUser>({
@@ -25,13 +26,13 @@ export const instanceDb = new Datastore<LocalUser>({
 });
 // INSTANCE_USERS env variable is the single source of truth for the instance/users
 // So we sync the database with environments variables without losing current jwt tokens at startup
-// The env must be in the form of "host:username:password,host:username:password" and password must not contain a colon and commas.
+// The env must be in the form of "host:active:username:password,host:active:username:password" and password must not contain a colon and commas.
 const INSTANCE_USERS = process.env.INSTANCE_USERS;
 if (INSTANCE_USERS) {
   (async () => {
     const newUsers = INSTANCE_USERS.split(",").map((u) => {
-      const [host, username, password] = u.split(":");
-      return { host, username, password };
+      const [host, active, username, password] = u.split(":");
+      return { host, active: active === "true", username, password };
     });
     // Clear old users
     await instanceDb.removeAsync({}, { multi: true });

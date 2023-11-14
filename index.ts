@@ -50,6 +50,7 @@ fastify.get("/", async (_request, reply) => {
       total,
       inProgress: communities.length,
     },
+    blacklist: BLACKLISTED_INSTANCES,
   });
 });
 

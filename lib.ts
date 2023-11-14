@@ -30,7 +30,7 @@ export async function conditionalFollow({
   localUsers?: LocalUser[];
   localCommunities?: LocalCommunity[];
 } = {}) {
-  if (!localUsers) localUsers = await instanceDb.findAsync({});
+  if (!localUsers) localUsers = await instanceDb.findAsync({ active: true });
   if (!localCommunities)
     localCommunities = await communityDb.findAsync({}).sort({ updatedAt: 1 });
   for (const localCommunity of localCommunities) {
