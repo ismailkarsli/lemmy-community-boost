@@ -42,7 +42,11 @@ fastify.get("/", async (_request, reply) => {
   const total = await communityDb.countAsync({});
   const instances = await instanceDb.findAsync({});
   return reply.view("/index.pug", {
-    instances: instances.map((i) => ({ host: i.host, username: i.username })),
+    instances: instances.map((i) => ({
+      host: i.host,
+      username: i.username,
+      active: i.active,
+    })),
     communities,
     interval: INTERVAL / 1000 / 60,
     announcement: ANNOUNCEMENT,
