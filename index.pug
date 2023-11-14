@@ -14,7 +14,7 @@ html(lang="en")
 				h4 Why 
 				p I think mods (including me) wouldn't want to put effort into a new community if it doesn't get any interaction, so I think it would be nice to at least start with it appearing in the "All" tab.
 				h4 How it works
-				p LCB automatically subscribes to communities from remote instances <b>until a normal user subscribes</b>. Then it will unsubscribe to not manipulate the community's subscriber count. Instances are listed below.
+				p LCB automatically subscribes to communities from remote instances <b>until a normal user subscribes</b>. Then it will unsubscribe to not manipulate the community's subscriber count.
 				p LCB will not subscribe to instances/communities that are:
 				ul
 					li Not guaranteed on Fediseer
@@ -48,7 +48,8 @@ html(lang="en")
 						tbody
 							each com in communities
 								tr(data-name=com.name, data-host=com.host)
-									td(data-label="Community name" scope="row")= com.name
+									td(data-label="Community name" scope="row")
+										a(href=`https://lemmyverse.link/c/${com.name}@${com.host}` target="_blank")= com.name
 									td(data-label="Instance")= com.host
 									td(data-label="Status" title=com.progress.map(p => (p.status === "done" ? "✅ " : p.status === "pending" ? "⏳ " : "❌ ")+ p.host).join("\n"))
 										if com.progress.filter(p => p.status === "done").length == com.progress.length
@@ -69,9 +70,9 @@ html(lang="en")
 					p Total of #{stats.total} communities (#{stats.total - stats.inProgress} completed, #{stats.inProgress} in progress)
 
 				div(style="margin-top: 12px;")
-					div ✅ = Another user subscribed to this community so LCB unsubscribed and the community is now federated.
-					div ⏳ = LCB subscribed to this community but no one else subscribed yet.
-					div ❌ = LCB tried to subscribe to this community but failed.
+					div ✅ = Community has a normal user subscription, LCB unsubscribed
+					div ⏳ = LCB subscribed to the community and waiting for a normal user subscription
+					div ❌ = LCB failed to subscribe to the community
 			if instances 
 				h2 Instances/Users
 				table#instances 
@@ -83,7 +84,8 @@ html(lang="en")
 					tbody
 						each inst in instances
 							tr
-								td(data-label="Instance" scope="row")= inst.host
+								td(data-label="Instance" scope="row")
+									a(href=`https://${inst.host}/` target="_blank")=inst.host
 								td(data-label="Username")= inst.username
 								td(data-label="Active")= inst.active ? "✅" : "❌"
 						else 
@@ -185,7 +187,12 @@ html(lang="en")
 	style.
 		body {
 			font-family: sans-serif;
-			
+		}
+		a {
+			color: #4CAF50;
+		}
+		h4 {
+			margin: 12px 0;
 		}
 		#main {
 			max-width: 800px;
@@ -312,10 +319,5 @@ html(lang="en")
 		footer div {
 			margin-bottom: 5px;
 		}
-		footer a {
-			color: #4CAF50;
-		}
-		h4 {
-			margin: 12px 0;
-		}
+
 	
