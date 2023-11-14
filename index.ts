@@ -40,7 +40,9 @@ fastify.get("/", async (_request, reply) => {
     })
     .sort({ createdAt: -1, updatedAt: -1 });
   const total = await communityDb.countAsync({});
-  const instances = await instanceDb.findAsync({});
+  const instances = await instanceDb
+    .findAsync({})
+    .sort({ active: -1, host: 1 });
   return reply.view("/index.pug", {
     instances: instances.map((i) => ({
       host: i.host,
