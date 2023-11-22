@@ -89,6 +89,15 @@ fastify.post("/", async (request, reply) => {
     };
   }
 
+  // Check if instance is approved the bot
+  const instance = await instanceDb.findOneAsync({ host });
+  if (!instance || !instance.active) {
+    return {
+      success: false,
+      message: `Instance ${host} is not approved by the admins`,
+    };
+  }
+
   const status = await fediseerStatus(host);
   if (!status.guarantees || status.censures >= 3) {
     return {
