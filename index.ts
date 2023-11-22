@@ -94,7 +94,7 @@ fastify.post("/", async (request, reply) => {
   if (!instance || !instance.active) {
     return {
       success: false,
-      message: `Instance ${host} is not approved by the admins`,
+      message: `${host} is not an active instance on LCB`,
     };
   }
 
