@@ -1,4 +1,8 @@
-import { FollowCommunity, LemmyHttp as LemmyHttp19 } from "lemmy-js-client_19";
+import {
+  FederatedInstances,
+  FollowCommunity,
+  LemmyHttp as LemmyHttp19,
+} from "lemmy-js-client_19";
 import { LemmyHttp as LemmyHttp18 } from "lemmy-js-client_18";
 import { LocalCommunity, LocalUser, communityDb, instanceDb } from "./database";
 import { AppError } from "./error";
@@ -43,6 +47,15 @@ export async function conditionalFollow({
       let status: "pending" | "done" | "error" = "pending";
       try {
         const client = await getClient(localUser);
+        const federationStatus = await instanceFederationStatus(
+          client,
+          localUser.host,
+          localCommunity.host
+        );
+        if (federationStatus === "blocked") {
+          status = "done";
+          continue;
+        }
         const community = await getCommunity(
           client,
           `${localCommunity.name}@${localCommunity.host}`
@@ -243,4 +256,40 @@ export async function fediseerStatus(
         (e instanceof Error ? e?.message : e)
     );
   }
+}
+
+type FederationStatus = "linked" | "allowed" | "blocked";
+const FEDERATION_STATUS_CACHE = new Map<
+  string,
+  {
+    list: FederatedInstances;
+    date: Date;
+  }
+>();
+export async function instanceFederationStatus(
+  client: LemmyHttp,
+  host: string,
+  targetHost: string
+): Promise<FederationStatus> {
+  const cached = FEDERATION_STATUS_CACHE.get(host);
+  let response: FederatedInstances | undefined;
+  // keep cache for 1 hour
+  if (cached && cached.date.getTime() + 1000 * 60 * 60 > Date.now()) {
+    response = cached.list;
+  } else {
+    if (client instanceof LemmyHttp18)
+      response = (await client.getFederatedInstances({ auth: client.jwt }))
+        .federated_instances;
+    else response = (await client.getFederatedInstances()).federated_instances;
+    if (!response) {
+      throw new AppError(
+        `Error while fetching federated instances from ${host}`
+      );
+    }
+    FEDERATION_STATUS_CACHE.set(host, { list: response, date: new Date() });
+  }
+  if (response.linked.some((i) => i.domain === targetHost)) return "linked";
+  if (response.allowed.some((i) => i.domain === targetHost)) return "allowed";
+  if (response.blocked.some((i) => i.domain === targetHost)) return "blocked";
+  return "allowed";
 }
