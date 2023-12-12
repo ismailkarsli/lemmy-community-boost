@@ -19,9 +19,7 @@ class LemmyHttp18WithJWT extends LemmyHttp18 {
 type LemmyHttp = LemmyHttp19 | LemmyHttp18WithJWT;
 
 /**
- * Important the logic is done here.
- * If the bot user is on 0.18, then we're gonna follow until an another normal user follows the community.
- * If the bot user is on 0.19, then we're gonna follow until a month passes. This is because this issue: https://github.com/LemmyNet/lemmy/issues/4144
+ * The logic is done here.
  */
 export async function conditionalFollow({
   localUsers,
@@ -51,23 +49,12 @@ export async function conditionalFollow({
         );
 
         if (
-          client instanceof LemmyHttp18 &&
-          community.counts.subscribers >
-            (community.subscribed === "NotSubscribed" ? 0 : 1)
+          // Bypass error for now. If the pull request merges, we can use `local_subscribers` on 0.19: https://github.com/LemmyNet/lemmy/pull/4166
+          ((community.counts as any).local_subscribers ||
+            community.counts.subscribers) >
+          (community.subscribed === "NotSubscribed" ? 0 : 1)
         ) {
           // Unfollow if there are other followers than the bot
-          await client.followCommunity({
-            community_id: community.community.id,
-            follow: false,
-            auth: client.jwt,
-          });
-          status = "done";
-          continue;
-        } else if (
-          // Subscribe for a month instead of above
-          localCommunity.createdAt.getTime() + 1000 * 60 * 60 * 24 * 30 <
-          Date.now()
-        ) {
           await followCommunity(client, {
             community_id: community.community.id,
             follow: false,

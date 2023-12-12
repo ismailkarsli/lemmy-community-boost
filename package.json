@@ -15,7 +15,7 @@
     "@fastify/view": "^8.2.0",
     "@seald-io/nedb": "^4.0.2",
     "fastify": "^4.24.3",
-    "lemmy-js-client_19": "npm:lemmy-js-client@^0.19.0-rc.14",
+    "lemmy-js-client_19": "npm:lemmy-js-client@^0.19.0-rc.19",
     "lemmy-js-client_18": "npm:lemmy-js-client@^0.18",
     "pug": "^3.0.2"
   },

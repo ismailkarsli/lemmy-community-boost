@@ -30,14 +30,7 @@ startPeriodicCheck();
 
 fastify.get("/", async (_request, reply) => {
   const communities = await communityDb
-    .findAsync({
-      $where: function () {
-        return (
-          this.progress.length === 0 ||
-          this.progress.some((p: { status: string }) => p.status !== "done")
-        );
-      },
-    })
+    .findAsync({})
     .sort({ createdAt: -1, updatedAt: -1 });
   const total = await communityDb.countAsync({});
   const instances = await instanceDb
