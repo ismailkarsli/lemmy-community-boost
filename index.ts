@@ -32,7 +32,9 @@ fastify.get("/", async (_request, reply) => {
   const communities = await communityDb
     .findAsync({})
     .sort({ createdAt: -1, updatedAt: -1 });
-  const total = await communityDb.countAsync({});
+  const inProgress = communities.filter((c) =>
+    c.progress.every((p) => p.status === "done")
+  ).length;
   const instances = await instanceDb
     .findAsync({})
     .sort({ active: -1, host: 1 });
@@ -46,8 +48,8 @@ fastify.get("/", async (_request, reply) => {
     interval: INTERVAL / 1000 / 60,
     announcement: ANNOUNCEMENT,
     stats: {
-      total,
-      inProgress: communities.length,
+      total: communities.length,
+      inProgress: inProgress,
     },
     blacklist: BLACKLISTED_INSTANCES,
   });

@@ -1,5 +1,6 @@
 // Unsubscribe from all subscriptions
 // For some reason, it needs to be run multiple times to unsubscribe from all communities
+// while sleep 10; do npx ts-node reset.ts; done
 
 import { instanceDb } from "./database";
 import { followCommunity, getClient } from "./lib";
