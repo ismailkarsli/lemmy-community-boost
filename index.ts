@@ -33,7 +33,7 @@ fastify.get("/", async (_request, reply) => {
     .findAsync({})
     .sort({ createdAt: -1, updatedAt: -1 });
   const inProgress = communities.filter((c) =>
-    c.progress.every((p) => p.status === "done")
+    c.progress.some((p) => p.status !== "done")
   ).length;
   const instances = await instanceDb
     .findAsync({})
