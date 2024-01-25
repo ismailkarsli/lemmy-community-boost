@@ -46,8 +46,8 @@ html(lang="en")
 										a(href=`https://lemmyverse.link/c/${com.name}@${com.host}` target="_blank")= com.name
 									td(data-label="Instance")= com.host
 									td(data-label="Status" title=com.progress.map(p => (p.status === "done" ? "✅ " : p.status === "pending" ? "⏳ " : "❌ ")+ p.host).join("\n"))
-										if com.progress.filter(p => p.status === "done").length == com.progress.length
-											span= "✅"
+										if com.progress.length === 0
+											span(style="font-style: italic")= "not started"
 										else
 											if com.progress.filter(p => p.status === "done").length
 												span= " ✅ " + com.progress.filter(p => p.status === "done").length

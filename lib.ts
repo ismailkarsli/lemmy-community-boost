@@ -74,9 +74,8 @@ export async function conditionalFollow({
 
         // subscribers_local for ^0.19, subscribers for 0.18
         const localSubscribers =
-          client instanceof LemmyHttp18
-            ? community.counts.subscribers
-            : (community.counts as CommunityAggregates19).subscribers_local;
+          (community.counts as CommunityAggregates19).subscribers_local ||
+          community.counts.subscribers;
         if (
           localSubscribers > (community.subscribed === "NotSubscribed" ? 0 : 1)
         ) {
