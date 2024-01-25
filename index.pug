@@ -15,14 +15,7 @@ html(lang="en")
 				p I think mods (including me) wouldn't want to put effort into a new community if it doesn't get any interaction, so I think it would be nice to at least start with it appearing in the "All" tab.
 				h4 How it works
 				p LCB automatically subscribes to communities from remote instances <b>until a normal user subscribes</b>. Then it will unsubscribe to not manipulate the community's subscriber count.
-				p LCB will not subscribe to instances/communities that are:
-				ul
-					li Not guaranteed on Fediseer
-					li Has 3 or more censures on Fediseer
-					li Is not joined to the LCB
-					li NSFW flagged
-					if blacklist && blacklist.length
-						li Blacklisted manually (#{blacklist.join(", ")})
+				p LCB only accepts non-NSFW communities from LCB member instances. If you want to add your instance to LCB, you can contact me.
 			if announcement
 				div#announcement= announcement
 			form#input(action="/", method="post") 

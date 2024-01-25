@@ -2,6 +2,7 @@ import {
   FederatedInstances,
   FollowCommunity,
   LemmyHttp as LemmyHttp19,
+  CommunityAggregates as CommunityAggregates19,
 } from "lemmy-js-client_19";
 import { LemmyHttp as LemmyHttp18 } from "lemmy-js-client_18";
 import { LocalCommunity, LocalUser, communityDb, instanceDb } from "./database";
@@ -35,6 +36,16 @@ export async function conditionalFollow({
   if (!localUsers) localUsers = await instanceDb.findAsync({ active: true });
   if (!localCommunities)
     localCommunities = await communityDb.findAsync({}).sort({ updatedAt: 1 });
+
+  // Cache clients to prevent session spamming
+  const clientCache = new Map<string, LemmyHttp>();
+  const getClientCached = async (user: LocalUser) => {
+    const cached = clientCache.get(user.host);
+    if (cached) return cached;
+    const client = await getClient(user);
+    clientCache.set(user.host, client);
+    return client;
+  };
   for (const localCommunity of localCommunities) {
     const progress = localCommunity.progress;
     let progressChanged = false;
@@ -46,7 +57,7 @@ export async function conditionalFollow({
       progressChanged = true;
       let status: "pending" | "done" | "error" = "pending";
       try {
-        const client = await getClient(localUser);
+        const client = await getClientCached(localUser);
         const federationStatus = await instanceFederationStatus(
           client,
           localUser.host,
@@ -61,11 +72,13 @@ export async function conditionalFollow({
           `${localCommunity.name}@${localCommunity.host}`
         );
 
+        // subscribers_local for ^0.19, subscribers for 0.18
+        const localSubscribers =
+          client instanceof LemmyHttp19
+            ? (community.counts as CommunityAggregates19).subscribers_local
+            : community.counts.subscribers;
         if (
-          // Bypass error for now. If the pull request merges, we can use `local_subscribers` on 0.19: https://github.com/LemmyNet/lemmy/pull/4166
-          ((community.counts as any).local_subscribers ||
-            community.counts.subscribers) >
-          (community.subscribed === "NotSubscribed" ? 0 : 1)
+          localSubscribers > (community.subscribed === "NotSubscribed" ? 0 : 1)
         ) {
           // Unfollow if there are other followers than the bot
           await followCommunity(client, {
