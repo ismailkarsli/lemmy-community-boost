@@ -73,9 +73,13 @@ export async function conditionalFollow({
         );
 
         // subscribers_local for ^0.19, subscribers for 0.18
+        // if subscribers_local is undefined (which is between 0.19 and 0.19.3) then make it 0 to follow the community anyway. this is a workaround and should be removed when 0.19.4 is released.
         const localSubscribers =
-          (community.counts as CommunityAggregates19).subscribers_local ||
-          community.counts.subscribers;
+          client instanceof LemmyHttp18
+            ? community.counts.subscribers
+            : (community.counts as CommunityAggregates19).subscribers_local ??
+              0;
+
         if (
           localSubscribers > (community.subscribed === "NotSubscribed" ? 0 : 1)
         ) {
