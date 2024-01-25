@@ -147,7 +147,7 @@ fastify.post("/", async (request, reply) => {
 
   // Initial follow
   const newRecord = await communityDb.findOneAsync({ host, name });
-  await conditionalFollow({ localCommunities: [newRecord] });
+  conditionalFollow({ localCommunities: [newRecord] });
 
   return {
     success: true,
